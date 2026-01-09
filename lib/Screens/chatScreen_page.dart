@@ -21,61 +21,72 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
   final ScrollController _scrollController = ScrollController();
 
   @override
+void initState() {
+  super.initState();
+  APIs.markAllMessagesAsRead(widget.users);
+}
+
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         flexibleSpace: _appBar(),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder(
-              stream: APIs.getAllMessage(widget.users),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting ||
-                    snapshot.connectionState == ConnectionState.none) {
-                  return const SizedBox();
-                }
-
-                final data = snapshot.data?.docs;
-                _list =
-                    data?.map((e) => Message.fromJson(e.data())).toList() ?? [];
-
-                // Sort messages by sent timestamp
-                _list.sort(
-                  (a, b) => int.parse(a.sent).compareTo(int.parse(b.sent)),
-                );
-
-                // Auto-scroll to latest message
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_scrollController.hasClients) {
-                    _scrollController.jumpTo(
-                      _scrollController.position.maxScrollExtent,
+      body: Padding(
+        padding: const EdgeInsets.only(top:8.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder(
+                stream: APIs.getAllMessage(widget.users),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting ||
+                      snapshot.connectionState == ConnectionState.none) {
+                    return const SizedBox();
+                  }
+        
+                  final data = snapshot.data?.docs;
+                  _list =
+                      data
+                          ?.map((e) => Message.fromJson(e.data(), e.id))
+                          .toList() ??
+                      [];
+        
+                  // Auto-scroll to latest message
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.jumpTo(
+                        _scrollController.position.maxScrollExtent,
+                      );
+                    }
+                  });
+        
+                  if (_list.isEmpty) {
+                    return const Center(
+                      child: Text("Say Hii!", style: TextStyle(fontSize: 22)),
                     );
                   }
-                });
-
-                if (_list.isEmpty) {
-                  return const Center(
-                    child: Text("Say Hii!", style: TextStyle(fontSize: 22)),
+        
+                  return ListView.builder(
+                    controller: _scrollController,
+                    physics: BouncingScrollPhysics(),
+                    itemCount: _list.length,
+                    itemBuilder: (context, index) {
+                      return MessageBox(
+                        message: _list[index],
+                        otherUser: widget.users,
+                      );
+                    },
                   );
-                }
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  physics: BouncingScrollPhysics(),
-                  itemCount: _list.length,
-                  itemBuilder: (context, index) {
-                    return MessageBox(message: _list[index]);
-                  },
-                );
-              },
+                },
+              ),
             ),
-          ),
-
-          _chatInput(),
-        ],
+        
+            _chatInput(),
+          ],
+        ),
       ),
     );
   }
@@ -188,7 +199,7 @@ class _ChatScreenPageState extends State<ChatScreenPage> {
                     IconButton(
                       onPressed: () {},
                       icon: Icon(
-                        Icons.emoji_emotions,
+                        Icons.settings_voice,
                         size: 26,
                         color: Color(0xFF3AAA35),
                       ),

@@ -1,4 +1,5 @@
 class Message {
+  final String id;
   final String fromId;
   final String toId;
   final String msg;
@@ -7,6 +8,7 @@ class Message {
   final String read;
 
   Message({
+    required this.id,
     required this.fromId,
     required this.toId,
     required this.msg,
@@ -16,14 +18,15 @@ class Message {
   });
 
   // 🔹 From Firestore (JSON → Dart)
-  factory Message.fromJson(Map<String, dynamic> json) {
+  factory Message.fromJson(Map<String, dynamic> json, String id) {
     return Message(
-      fromId: json['fromId'].toString(),
-      toId: json['told'].toString(),
-      msg: json['msg'].toString(),
-      type: json['type'].toString() == Type.image.name ? Type.image : Type.text,
-      sent: json['sent'].toString(),
-      read: json['read'].toString(),
+      id: json['id'] ?? '',
+      fromId: json['fromId'] ?? '',
+      toId: json['toId'] ?? '',
+      msg: json['msg'] ?? '',
+      type: json['type'] == Type.image.name ? Type.image : Type.text,
+      sent: json['sent'] ?? '',
+      read: json['read'] ?? '',
     );
   }
 
@@ -31,7 +34,7 @@ class Message {
   Map<String, dynamic> toJson() {
     return {
       'fromId': fromId,
-      'told': toId,
+      'toId': toId,
       'msg': msg,
       'type': type.name,
       'sent': sent,
