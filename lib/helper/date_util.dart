@@ -21,4 +21,19 @@ class DateUtil {
       alwaysUse24HourFormat: false, // false = use AM/PM
     );
   }
+
+  static String getLastActiveTime({
+    required BuildContext context,
+    required DateTime lastActive,
+  }) {
+    final now = DateTime.now();
+    final difference = now.difference(lastActive);
+
+    if (difference.inSeconds < 60) return "Just now";
+    if (difference.inMinutes < 60) return "${difference.inMinutes} min ago";
+    if (difference.inHours < 24) return "${difference.inHours} hours ago";
+    if (difference.inDays < 7) return "${difference.inDays} days ago";
+
+    return "${lastActive.day}/${lastActive.month}/${lastActive.year}";
+  }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -6,6 +7,7 @@ import 'package:we_chat/models/message.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import '../models/chat_users.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class APIs {
   static final FirebaseAuth auth = FirebaseAuth.instance;
@@ -53,6 +55,7 @@ class APIs {
       isActive: time,
       isOnline: false,
       pushToken: '',
+      lastActive: DateTime.now(),
     );
 
     await firestore.collection("users").doc(user.uid).set(chatUsers.toJson());
@@ -191,5 +194,35 @@ class APIs {
       },
       body: jsonEncode(data),
     );
+  }
+
+  static Future<void> sendAudioMessage(
+    ChatUsers chatUser,
+    File audioFile,
+  ) async {
+    final time = DateTime.now().millisecondsSinceEpoch.toString();
+
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('chat_audio')
+        .child('${getConversationID(chatUser.id)}_$time.m4a');
+
+    await storageRef.putFile(audioFile);
+    final audioUrl = await storageRef.getDownloadURL();
+
+    final message = Message(
+      id: time,
+      fromId: user.uid,
+      toId: chatUser.id,
+      msg: audioUrl,
+      type: Type.audio,
+      sent: time,
+      read: '',
+    );
+
+    await firestore
+        .collection("chat/${getConversationID(chatUser.id)}/message")
+        .doc(time)
+        .set(message.toJson());
   }
 }

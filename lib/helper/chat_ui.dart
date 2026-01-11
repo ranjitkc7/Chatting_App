@@ -66,8 +66,8 @@ class _ChatUIPageState extends State<ChatUIPage> {
 
             bool isUnread =
                 _lastMessage != null &&
-                _lastMessage!.fromId != APIs.user.uid && // sent by other user
-                _lastMessage!.toId == APIs.user.uid && // sent to me
+                _lastMessage!.fromId != APIs.user.uid && 
+                _lastMessage!.toId == APIs.user.uid && 
                 _lastMessage!.read.isEmpty;
 
             String? trailingText;

@@ -24,7 +24,10 @@ class Message {
       fromId: json['fromId'] ?? '',
       toId: json['toId'] ?? '',
       msg: json['msg'] ?? '',
-      type: json['type'] == Type.image.name ? Type.image : Type.text,
+      type: Type.values.firstWhere(
+        (e) => e.name == json['type'],
+        orElse: () => Type.text,
+      ),
       sent: json['sent'] ?? '',
       read: json['read'] ?? '',
     );
@@ -43,4 +46,4 @@ class Message {
   }
 }
 
-enum Type { text, image }
+enum Type { text, image, audio }
